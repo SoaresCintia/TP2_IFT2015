@@ -2,7 +2,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.PriorityQueue;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Process {
@@ -10,7 +12,8 @@ public class Process {
 private String readFile;
 private String writeFile;
 //private Stock  stoc;
-private TreeSet<Drug> stock;
+// private TreeSet<Drug> stock;
+private TreeMap < String, PriorityQueue < Drug > > stock;
 private TreeSet<Drug> order;
 
 public final String APPROV = "APPROV";
@@ -30,7 +33,7 @@ public Process (String [] args){
 
     // this.myWriter = new FileWriter(writeFile);
 
-    this.stock = new TreeSet<>();
+    this.stock = new TreeMap<>();
     this.order = new TreeSet<>();
 
 
@@ -54,7 +57,11 @@ private  void processDataFile(){
                         String[] medication = med.split(" ");
                         if(medication.length >= 2){
                             // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
-                            this.stock.add(new Drug(medication[0], Integer.parseInt(medication[1]), new Date(medication[2])));
+                            Drug drug = new Drug(medication[0], Integer.parseInt(medication[1]), new Date(medication[2]));
+                            
+                            if()
+
+                            this.stock.put( medication[0],  );
                             // System.out.println(stock);
                         }
                         else{
@@ -98,23 +105,20 @@ private  void processDataFile(){
                     String med = myReader.nextLine();
                     String[] medication = med.split(" ");
                     if(medication.length >= 3){
-                        // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
-                        // this.stock.add(new Drug(medication[0], Integer.parseInt(medication[1]), new Date(medication[2])));
-                        // System.out.println(stock);
-                        // calculer la quantite total 
-                        // calculer la date final du traitement
+                        // calculer la quantite total qui est aussi le nombre des jours de traitement
                         // chercher le medicament dans stock, si trouvé, verifier la data
                         // si medicament trouvé afficher la prescription avec identifiant
                         // Ok si trouvé dans stock
                         // sinon Commande et ajouter dans order
                         Drug drugPrescription = new Drug(medication[0], 0, null);
-                        int treatementSpan =  Integer.parseInt(medication[1])* Integer.parseInt(medication[2]);
-                        // Date dateTreatementFinal = 
+                        int quantity =  Integer.parseInt(medication[1])* Integer.parseInt(medication[2]);
 
                         if(this.stock.contains(drugPrescription)){
                             for (Drug d : stock) {
                                 if(drugPrescription.equals(d)){
+                                    if(actualDate.getNumODays(d.getExpirationDate()) > quantity ){
 
+                                    }
                                 }
                             }
                         };

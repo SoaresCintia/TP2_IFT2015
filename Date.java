@@ -1,3 +1,6 @@
+import java.time.LocalDate;
+import java.time.Period;
+
 public class Date implements Comparable<Date>{
 
     private int day;
@@ -21,6 +24,14 @@ public class Date implements Comparable<Date>{
 
     public int getYear() {
         return year;
+    }
+
+    public int getNumODays(Date date){
+        LocalDate start = LocalDate.of(this.year, this.month, this.day);
+        LocalDate end = LocalDate.of(date.year,date.month,date.day);
+        Period period = Period.between(start, end);
+        int days = period.getDays();
+        return days;
     }
 
     @Override
