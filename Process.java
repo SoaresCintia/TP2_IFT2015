@@ -15,7 +15,7 @@ private String writeFile;
 //private Stock  stoc;
 // private TreeSet<Drug> stock;
 private TreeMap < String, PriorityQueue < Drug > > stock;
-private TreeSet<Drug> order;
+private TreeMap< String, Integer> order;
 
 public final String APPROV = "APPROV";
 public final String DATE = "DATE";
@@ -35,7 +35,7 @@ public Process (String [] args){
     // this.myWriter = new FileWriter(writeFile);
 
     this.stock = new TreeMap<>();
-    this.order = new TreeSet<>();
+    this.order = new TreeMap<>();
 
 
 }
@@ -87,8 +87,12 @@ private  void processDataFile(){
                     
                     if(this.order.size() > 0){
                         writeResult(actualDate.toString() + " " + COMMANDE + " :");
-                        for (Drug d : order) {
-                            writeResult(d.getName() + "  " + d.getQuantity());
+
+                        Set <String> names = order.keySet();
+
+                        for ( String name : names) {
+                            
+                            writeResult(name + " " + order.get(name) );
                             
                         }
                         writeResult("\n");
@@ -121,19 +125,59 @@ private  void processDataFile(){
                     break;
                 case PRESCRIPTION:
                     while(myReader.hasNextLine()){
+                        
                     String med = myReader.nextLine();
                     String[] medication = med.split(" ");
+
                     if(medication.length >= 3){
-                        // calculer la quantite total qui est aussi le nombre des jours de traitement
-                        // chercher le medicament dans stock, si trouvé, verifier la data
-                        // si medicament trouvé afficher la prescription avec identifiant
-                        // Ok si trouvé dans stock
-                        // sinon Commande et ajouter dans order
+
+                        System.out.println("taille " + medication.length);
+                        
                         Drug drugPrescription = new Drug(medication[0], 0, null);
-                        int quantity =  Integer.parseInt(medication[1])* Integer.parseInt(medication[2]);
+
+                        System.out.println( "med 1" + medication[1] );
+
+                        System.out.println( "med 2"  + medication[2]);
+
+
+                        int traitmentDose = Integer.parseInt(medication[1]);
+
+                        int repetition = Integer.parseInt(medication[2]);
+
+                        
+                        int quantity =  traitmentDose * repetition;
                         
                         if(this.stock.containsKey(drugPrescription.getName())){
                             PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
+                            Boolean flag = false;
+
+                            for (Drug drug : queue){
+                                int numODays = actualDate.getNumODays(drug.getExpirationDate());
+                                if (numODays >= quantity){ // for expiration Date
+                                    if( drug.getQuantity() >= drugPrescription.getQuantity()){
+                                        drug.setQuantity(drug.getQuantity() - quantity);
+                                        writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
+                                        flag = true;
+                                        if (drug.getQuantity() == 0){
+                                            queue.remove(drug);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            if(!flag){
+                                writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   COMMANDE);
+                                
+                                if(order.containsKey(drugPrescription.getName())){
+                                    
+                                    order.put(drugPrescription.getName(), order.get(drugPrescription.getName()) + quantity); 
+                                }
+                                else{
+                                    order.put(drugPrescription.getName(), quantity);
+                                }
+                            }
+                            
+
 
                             
 

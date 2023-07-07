@@ -60,4 +60,8 @@ public class Drug implements Comparable<Drug> {
     public int getQuantity() {
         return this.quantity;
     }
+
+    public void setQuantity(int i) {
+        this.quantity = i;
+    }
 }
