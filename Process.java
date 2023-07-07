@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Set;
@@ -128,6 +129,21 @@ private  void processDataFile(){
                         
                     String med = myReader.nextLine();
                     String[] medication = med.split(" ");
+                    
+                    ArrayList<String> meds = new ArrayList<String>();
+                    for(int i=0; i<medication.length; i++){
+                        if(!medication[i].equals(" ")){
+                            meds.add(medication[i]);
+                        }
+                    }
+                    meds.forEach(obj -> {
+                        
+                    });
+                    System.out.println(meds);
+
+                    
+                    System.out.println(meds);
+                    System.out.println(meds.size());
 
                     if(medication.length >= 3){
 
@@ -179,7 +195,7 @@ private  void processDataFile(){
                             
 
 
-                            
+
 
                             
                             
