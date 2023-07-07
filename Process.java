@@ -130,38 +130,57 @@ private  void processDataFile(){
                     String med = myReader.nextLine();
                     String[] medication = med.split(" ");
                     
-                    ArrayList<String> meds = new ArrayList<String>();
-                    for(int i=0; i<medication.length; i++){
-                        if(!medication[i].equals(" ")){
-                            meds.add(medication[i]);
-                        }
-                    }
-                    meds.forEach(obj -> {
+                    // ArrayList<String> meds = new ArrayList<String>();
+                    // for(int i=0; i<medication.length; i++){
+                    //     if(!medication[i].equals(" ")){
+                    //         meds.add(medication[i]);
+                    //     }
+                    // }
+                    // meds.forEach(obj -> {
                         
-                    });
-                    System.out.println(meds);
+                    // });
+                    // System.out.println(meds);
 
                     
-                    System.out.println(meds);
-                    System.out.println(meds.size());
+                    
+                    // System.out.println(meds);
+                    // System.out.println(meds.size());
 
                     if(medication.length >= 3){
 
-                        System.out.println("taille " + medication.length);
+                        // fullName = kybd.nextLine(); med
+                    // Remove leading and trailing whitespaces
+                    String fullName = med.trim();
+
+                    // Bounds
+                    int firstSpace = fullName.indexOf(" ");
+                    int lastSpace = fullName.lastIndexOf(" ");
+
+                    // Extract names
+                    String medicationName = fullName.substring(0, firstSpace);
+                    String dose = fullName.substring(firstSpace + 1, lastSpace);
+                    String repetition = fullName.substring(lastSpace + 1);
+
+                    // Trim everything
+                    medicationName = medicationName.trim(); // Not needed
+                    dose = dose.trim();
+                    repetition = repetition.trim();
+
+                    System.out.println("medicationtest " + medicationName);
+
+                    System.out.println("dose " + dose);
+
+                    System.out.println( "repetition " + repetition);
+
                         
-                        Drug drugPrescription = new Drug(medication[0], 0, null);
-
-                        System.out.println( "med 1" + medication[1] );
-
-                        System.out.println( "med 2"  + medication[2]);
+                        Drug drugPrescription = new Drug(medicationName, 0, null);
 
 
-                        int traitmentDose = Integer.parseInt(medication[1]);
+                        int traitmentDose = Integer.parseInt(dose);
 
-                        int repetition = Integer.parseInt(medication[2]);
+                        int traitmentRepetition = Integer.parseInt(repetition);
 
-                        
-                        int quantity =  traitmentDose * repetition;
+                        int quantity =  traitmentDose * traitmentRepetition;
                         
                         if(this.stock.containsKey(drugPrescription.getName())){
                             PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
@@ -182,7 +201,7 @@ private  void processDataFile(){
                                 }
                             }
                             if(!flag){
-                                writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   COMMANDE);
+                                writeResult(drugPrescription.getName() + " " + traitmentDose + " " + traitmentRepetition + " " +   COMMANDE);
                                 
                                 if(order.containsKey(drugPrescription.getName())){
                                     
@@ -192,12 +211,6 @@ private  void processDataFile(){
                                     order.put(drugPrescription.getName(), quantity);
                                 }
                             }
-                            
-
-
-
-
-                            
                             
                         };
                     }
