@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.PriorityQueue;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -57,12 +58,18 @@ private  void processDataFile(){
                         String[] medication = med.split(" ");
                         if(medication.length >= 2){
                             // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
+                            String drugName = medication[0];
                             Drug drug = new Drug(medication[0], Integer.parseInt(medication[1]), new Date(medication[2]));
                             
-                            if()
+                            if(this.stock.containsKey(drugName)){
+                                this.stock.get(drugName).add(drug);
+                            }
+                            else {
+                                PriorityQueue<Drug> queue = new PriorityQueue<>();
+                                queue.add(drug);
+                                this.stock.put(drugName,queue);
 
-                            this.stock.put( medication[0],  );
-                            // System.out.println(stock);
+                            }
                         }
                         else{
                             break;
@@ -94,8 +101,20 @@ private  void processDataFile(){
                     break;
                 case STOCK:
                     writeResult(STOCK + " " + actualDate.toString());
-                    for (Drug d : stock) {
-                        writeResult(d.toString());
+                    Set<String> names = stock.keySet();
+                    for (String name  : names) {
+                         stock.get(name).forEach( obj ->{
+                            if(obj.getExpirationDate().compareTo(actualDate) >= 1){
+                                writeResult(obj.toString());
+                            }
+                            else{
+                                stock.get(name).remove(obj); // removing experied drugs.
+                            }
+                            
+                        }); 
+                        if(stock.get(name).size() == 0){ // checking if there's still any drug list associated to this name 
+                            stock.remove(name);// if not the node is removed from the tree.
+                        }  
                     }
                     writeResult("\n");
 
@@ -112,15 +131,14 @@ private  void processDataFile(){
                         // sinon Commande et ajouter dans order
                         Drug drugPrescription = new Drug(medication[0], 0, null);
                         int quantity =  Integer.parseInt(medication[1])* Integer.parseInt(medication[2]);
+                        
+                        if(this.stock.containsKey(drugPrescription.getName())){
+                            PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
 
-                        if(this.stock.contains(drugPrescription)){
-                            for (Drug d : stock) {
-                                if(drugPrescription.equals(d)){
-                                    if(actualDate.getNumODays(d.getExpirationDate()) > quantity ){
+                            
 
-                                    }
-                                }
-                            }
+                            
+                            
                         };
                     }
                     else{

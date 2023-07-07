@@ -26,7 +26,7 @@ public class Date implements Comparable<Date>{
         return year;
     }
 
-    public int getNumODays(Date date){
+    public  int getNumODays(Date date){
         LocalDate start = LocalDate.of(this.year, this.month, this.day);
         LocalDate end = LocalDate.of(date.year,date.month,date.day);
         Period period = Period.between(start, end);
