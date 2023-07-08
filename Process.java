@@ -2,12 +2,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
+
 
 public class Process {
 
@@ -24,6 +24,7 @@ public final String STOCK = "STOCK";
 public final String PRESCRIPTION = "PRESCRIPTION";
 public final String OK = "OK";
 public final String COMMANDE = "COMMANDE";
+private int prinsciptionNum = 1;
 
 private Date actualDate;
 
@@ -41,7 +42,13 @@ public Process (String [] args){
 
 }
 
-private  void processDataFile(){
+public Process(){
+    this.stock = new TreeMap<>();
+    this.order = new TreeMap<>();
+
+}
+
+public  void processDataFile(){
     try {
         File myObj = new File(this.readFile);
         Scanner myReader = new Scanner(myObj);
@@ -93,7 +100,7 @@ private  void processDataFile(){
 
                         for ( String name : names) {
                             
-                            writeResult(name + " " + order.get(name) );
+                            writeResult(name + " " + order.get(name));
                             
                         }
                         writeResult("\n");
@@ -125,114 +132,105 @@ private  void processDataFile(){
 
                     break;
                 case PRESCRIPTION:
+                    writeResult(PRESCRIPTION +" " +prinsciptionNum++);
                     while(myReader.hasNextLine()){
                         
-                    String med = myReader.nextLine();
-                    String[] medication = med.split(" ");
+                        String med = myReader.nextLine();
+                        String[] medication = med.split(" ");
                     
-                    // ArrayList<String> meds = new ArrayList<String>();
-                    // for(int i=0; i<medication.length; i++){
-                    //     if(!medication[i].equals(" ")){
-                    //         meds.add(medication[i]);
-                    //     }
-                    // }
-                    // meds.forEach(obj -> {
-                        
-                    // });
-                    // System.out.println(meds);
 
-                    
-                    
-                    // System.out.println(meds);
-                    // System.out.println(meds.size());
+                        if(medication.length >= 3){
 
-                    if(medication.length >= 3){
+                            // fullName = kybd.nextLine(); med
+                            // Remove leading and trailing whitespaces
+                            String fullName = med.trim();
 
-                        // fullName = kybd.nextLine(); med
-                    // Remove leading and trailing whitespaces
-                    String fullName = med.trim();
+                            // Bounds
+                            int firstSpace = fullName.indexOf(" ");
+                            int lastSpace = fullName.lastIndexOf(" ");
 
-                    // Bounds
-                    int firstSpace = fullName.indexOf(" ");
-                    int lastSpace = fullName.lastIndexOf(" ");
+                            // Extract names
+                            String medicationName = fullName.substring(0, firstSpace);
+                            String dose = fullName.substring(firstSpace + 1, lastSpace);
+                            String repetition = fullName.substring(lastSpace + 1);
 
-                    // Extract names
-                    String medicationName = fullName.substring(0, firstSpace);
-                    String dose = fullName.substring(firstSpace + 1, lastSpace);
-                    String repetition = fullName.substring(lastSpace + 1);
+                            // Trim everything
+                            medicationName = medicationName.trim(); // Not needed
+                            dose = dose.trim();
+                            repetition = repetition.trim();
 
-                    // Trim everything
-                    medicationName = medicationName.trim(); // Not needed
-                    dose = dose.trim();
-                    repetition = repetition.trim();
+                            System.out.println("medicationtest " + medicationName);
 
-                    System.out.println("medicationtest " + medicationName);
+                            System.out.println("dose " + dose);
 
-                    System.out.println("dose " + dose);
+                            System.out.println( "repetition " + repetition);
 
-                    System.out.println( "repetition " + repetition);
-
-                        
-                        Drug drugPrescription = new Drug(medicationName, 0, null);
+                            
+                            Drug drugPrescription = new Drug(medicationName, 0, null);
 
 
-                        int traitmentDose = Integer.parseInt(dose);
+                            int traitmentDose = Integer.parseInt(dose);
 
-                        int traitmentRepetition = Integer.parseInt(repetition);
+                            int traitmentRepetition = Integer.parseInt(repetition);
 
-                        int quantity =  traitmentDose * traitmentRepetition;
-                        
-                        if(this.stock.containsKey(drugPrescription.getName())){
-                            PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
-                            Boolean flag = false;
+                            int quantity =  traitmentDose * traitmentRepetition;
+                            Date  finalDate = actualDate.computeDate(quantity);
+                            
+                            
+                            if(this.stock.containsKey(drugPrescription.getName())){
+                                PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
+                                Boolean flag = false;
 
-                            for (Drug drug : queue){
-                                int numODays = actualDate.getNumODays(drug.getExpirationDate());
-                                if (numODays >= quantity){ // for expiration Date
-                                    if( drug.getQuantity() >= drugPrescription.getQuantity()){
-                                        drug.setQuantity(drug.getQuantity() - quantity);
-                                        writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
-                                        flag = true;
-                                        if (drug.getQuantity() == 0){
-                                            queue.remove(drug);
+                                for (Drug drug : queue){
+                                    int numODays = actualDate.getNumODays(drug.getExpirationDate());
+                                    if (drug.getExpirationDate().compareTo(finalDate) >= 1){ // for expiration Date
+                                        if( drug.getQuantity() >= drugPrescription.getQuantity()){
+                                            drug.setQuantity(drug.getQuantity() - quantity);
+                                            writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
+                                            flag = true;
+                                            if (drug.getQuantity() == 0){
+                                                queue.remove(drug);
+                                            }
+                                            break;
                                         }
-                                        break;
                                     }
                                 }
-                            }
-                            if(!flag){
-                                writeResult(drugPrescription.getName() + " " + traitmentDose + " " + traitmentRepetition + " " +   COMMANDE);
+                                if(!flag){
+                                   addToOrder(drugPrescription,traitmentDose,traitmentRepetition,quantity);
+                                }
                                 
-                                if(order.containsKey(drugPrescription.getName())){
-                                    
-                                    order.put(drugPrescription.getName(), order.get(drugPrescription.getName()) + quantity); 
-                                }
-                                else{
-                                    order.put(drugPrescription.getName(), quantity);
-                                }
                             }
+                            else{
+                                
+                                addToOrder(drugPrescription,traitmentDose,traitmentRepetition,quantity);
+                                
+                                
+                            }
+                        }
+                        else{
                             
-                        };
-                    }
-                    else{
-                        break;
-                    }
-                }        
-                writeResult(APPROV + " " + OK + "\n");
-
-                    
+                            break;
+                        }
+                    }     
+                    writeResult("\n");   
                     break;
-        
+                
                 default:
                     break;
         }
-        }
+     }
         myReader.close();
-      } catch (FileNotFoundException e) {
+    } 
+    catch (FileNotFoundException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
-      }
+    }
 }
+
+
+
+
+  
 
 
 
@@ -249,8 +247,22 @@ private void writeResult(String st){
       } catch (IOException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
-      }
     }
+}
+
+private void addToOrder(Drug d, int dose, int rep,int quantity){
+     writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE);
+    if(order.containsKey(d.getName())){
+                                        
+        order.put(d.getName(), order.get(d.getName()) + quantity); 
+    }
+    else{
+        order.put(d.getName(), quantity);
+    }
+    
+}
+
+
 
 
 public void compute(){

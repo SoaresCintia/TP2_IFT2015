@@ -26,6 +26,12 @@ public class Date implements Comparable<Date>{
         return year;
     }
 
+    public Date(int year, int month, int day){
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+
     public  int getNumODays(Date date){
         LocalDate start = LocalDate.of(this.year, this.month, this.day);
         LocalDate end = LocalDate.of(date.year,date.month,date.day);
@@ -69,4 +75,51 @@ public class Date implements Comparable<Date>{
     public String toString(){
         return this.year + "-" + this.month + "-" + this.day;
     }
+
+
+    public Date computeDate(int duration) {
+        int daysToAdd = duration;
+        int newYear = year;
+        int newMonth = month;
+        int newDay = day;
+        
+        while (daysToAdd > 0) {
+            int daysInCurrentMonth = getDaysInMonth(newYear, newMonth);
+            int remainingDays = daysInCurrentMonth - newDay + 1;
+            
+            if (daysToAdd >= remainingDays) {
+                // Move to the next month
+                if (newMonth == 12) {
+                    newMonth = 1;
+                    newYear++;
+                } else {
+                    newMonth++;
+                }
+                
+                newDay = 1;
+                daysToAdd -= remainingDays;
+            } else {
+                // Add remaining days to the current month
+                newDay += daysToAdd;
+                daysToAdd = 0;
+            }
+        }
+        
+        return new Date(newYear, newMonth, newDay);
+    }
+    
+    private boolean isLeapYear(int year) {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+    
+    private int getDaysInMonth(int year, int month) {
+        int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        
+        if (month == 2 && isLeapYear(year)) {
+            return 29;
+        }
+        
+        return daysInMonth[month - 1];
+    }
+    
 }
