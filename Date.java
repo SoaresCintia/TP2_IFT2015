@@ -73,7 +73,20 @@ public class Date implements Comparable<Date>{
     
     @Override
     public String toString(){
-        return this.year + "-" + this.month + "-" + this.day;
+        String m;
+        String d;
+        if(this.month < 10){
+            m = "0" + this.month;
+        }else{
+            m = ""+this.month;
+        }
+        if(this.day < 10){
+            d = "0" + this.day;
+        }else{
+            d = ""+ this.day;
+        }
+
+        return this.year + "-" + m + "-" + d;
     }
 
 

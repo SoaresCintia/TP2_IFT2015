@@ -13,8 +13,7 @@ public class Process {
 
 private String readFile;
 private String writeFile;
-//private Stock  stoc;
-// private TreeSet<Drug> stock;
+
 private TreeMap < String, PriorityQueue < Drug > > stock;
 private TreeMap< String, Integer> order;
 
@@ -28,13 +27,9 @@ private int prinsciptionNum = 1;
 
 private Date actualDate;
 
-// private FileWriter myWriter ;
-
 public Process (String [] args){
     this.readFile = args[0];
     this.writeFile = args[1];
-
-    // this.myWriter = new FileWriter(writeFile);
 
     this.stock = new TreeMap<>();
     this.order = new TreeMap<>();
@@ -63,7 +58,22 @@ public  void processDataFile(){
                 case APPROV: 
                     while(myReader.hasNextLine()){
                         String med = myReader.nextLine();
-                        String[] medication = med.split(" ");
+
+                        // String str = "one_space   multiple_spaces    tab";
+                        String [] medication = med.split("\\s+");
+
+                        // arr[0] = one_space
+                        // arr[1] = multiple_spaces
+                        // arr[2] = tab
+
+
+                        // String[] medication = med.split(" ");
+                        
+                        // if(medication.length == 1){ 
+                        //     medication = medication[0].split("\t");
+                        // }
+                        
+                        // System.out.println("taille med " + medication.length);
                         if(medication.length >= 2){
                             // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
                             String drugName = medication[0];
@@ -86,11 +96,9 @@ public  void processDataFile(){
                     writeResult(APPROV + " " + OK + "\n");
                     
                     break;
-                case DATE: // garder la date ? 
-                            // écrire : OK ou date COMMANDES : liste des medicaments
-                    System.out.print("in date");
+                case DATE: 
+                    // System.out.print("in date");
                     String date = line[1];
-                    // System.out.println();
                     actualDate = new Date(date);
                     
                     if(this.order.size() > 0){
@@ -105,29 +113,47 @@ public  void processDataFile(){
                         }
                         writeResult("\n");
                     }else{
-                        System.out.print("in else statement");
+                        // System.out.print("in else statement");
                         writeResult(actualDate.toString() + " " + OK + "\n");
 
                     }
 
                     break;
                 case STOCK:
+                    
                     writeResult(STOCK + " " + actualDate.toString());
                     Set<String> names = stock.keySet();
+
                     for (String name  : names) {
-                         stock.get(name).forEach( obj ->{
-                            if(obj.getExpirationDate().compareTo(actualDate) >= 1){
-                                writeResult(obj.toString());
+                        
+                        PriorityQueue<Drug> queue = stock.get(name);
+                            // find the first ele in queue that has the good expiration date
+                        while(queue.size() != 0 ){
+                                // if the first date is good, the others are good also
+                                Drug drug = queue.peek();
+                                if(drug.getExpirationDate().compareTo(actualDate) >= 0){ // c'etait 1
+                                    break;
+                                }
+                                else{
+                                    stock.get(name).remove(drug); // removing experied drugs.// or poll
+                                    queue.poll();
+                                }
                             }
-                            else{
-                                stock.get(name).remove(obj); // removing experied drugs.
-                            }
+
+                            queue.forEach(obj ->  writeResult(obj.toString()));
+
+                        // ConcurrentModificationException in Exemple 3
+                        // Maybe it is not necessary because we print queue 
+                        // if(stock.get(name).size() == 0){ // checking if there's still any drug list associated to this name 
+                        //     stock.remove(name);// if not the node is removed from the tree.
+                        //     // break;
                             
-                        }); 
-                        if(stock.get(name).size() == 0){ // checking if there's still any drug list associated to this name 
-                            stock.remove(name);// if not the node is removed from the tree.
-                        }  
+                        // }  
                     }
+                    
+                    
+                
+
                     writeResult("\n");
 
                     break;
@@ -136,45 +162,26 @@ public  void processDataFile(){
                     while(myReader.hasNextLine()){
                         
                         String med = myReader.nextLine();
-                        String[] medication = med.split(" ");
+                        
+                        // String[] medication = med.split(" ");
+
+                        String [] medication = med.split("\\s+");
+
                     
 
                         if(medication.length >= 3){
 
-                            // fullName = kybd.nextLine(); med
-                            // Remove leading and trailing whitespaces
-                            String fullName = med.trim();
-
-                            // Bounds
-                            int firstSpace = fullName.indexOf(" ");
-                            int lastSpace = fullName.lastIndexOf(" ");
-
-                            // Extract names
-                            String medicationName = fullName.substring(0, firstSpace);
-                            String dose = fullName.substring(firstSpace + 1, lastSpace);
-                            String repetition = fullName.substring(lastSpace + 1);
-
-                            // Trim everything
-                            medicationName = medicationName.trim(); // Not needed
-                            dose = dose.trim();
-                            repetition = repetition.trim();
-
-                            System.out.println("medicationtest " + medicationName);
-
-                            System.out.println("dose " + dose);
-
-                            System.out.println( "repetition " + repetition);
-
-                            
-                            Drug drugPrescription = new Drug(medicationName, 0, null);
-
+                            String medicationName = medication[0];
+                            String dose = medication[1];
+                            String repetition = medication[2];
 
                             int traitmentDose = Integer.parseInt(dose);
-
                             int traitmentRepetition = Integer.parseInt(repetition);
 
-                            int quantity =  traitmentDose * traitmentRepetition;
-                            Date  finalDate = actualDate.computeDate(quantity);
+                            
+                            Drug drugPrescription = new Drug(medicationName, traitmentDose * traitmentRepetition, null);
+
+                            Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
                             
                             
                             if(this.stock.containsKey(drugPrescription.getName())){
@@ -182,10 +189,10 @@ public  void processDataFile(){
                                 Boolean flag = false;
 
                                 for (Drug drug : queue){
-                                    int numODays = actualDate.getNumODays(drug.getExpirationDate());
+                                    // int numODays = actualDate.getNumODays(drug.getExpirationDate());
                                     if (drug.getExpirationDate().compareTo(finalDate) >= 1){ // for expiration Date
                                         if( drug.getQuantity() >= drugPrescription.getQuantity()){
-                                            drug.setQuantity(drug.getQuantity() - quantity);
+                                            drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
                                             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
                                             flag = true;
                                             if (drug.getQuantity() == 0){
@@ -196,13 +203,13 @@ public  void processDataFile(){
                                     }
                                 }
                                 if(!flag){
-                                   addToOrder(drugPrescription,traitmentDose,traitmentRepetition,quantity);
+                                   addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
                                 }
                                 
                             }
                             else{
                                 
-                                addToOrder(drugPrescription,traitmentDose,traitmentRepetition,quantity);
+                                addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
                                 
                                 
                             }
@@ -237,7 +244,7 @@ public  void processDataFile(){
 
 private void writeResult(String st){
     try {
-        System.out.println(st);
+        // System.out.println(st);
         FileWriter myWriter = new FileWriter(writeFile,true);
         myWriter.write(st + "\n");
         
