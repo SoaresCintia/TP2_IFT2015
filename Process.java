@@ -65,25 +65,26 @@ public  void processDataFile(){
             
             
             switch (command) {
-                case APPROV: 
-                    while(myReader.hasNextLine()){
+                case APPROV:  // O(log n + log t )
+                    while(myReader.hasNextLine()){ // O (n)
                         String med = myReader.nextLine();
 
                         String [] medication = med.split("\\s+");
 
                         if(medication.length >= 2){
-                            // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
                             String drugName = medication[0];
-                            Drug drug = new Drug(drugName, Integer.parseInt(medication[1]), new Date(medication[2]));
+                            Drug drug = new Drug(drugName, 
+                                                Integer.parseInt(medication[1]), 
+                                                new Date(medication[2]));
                             
-                            if(this.stock.containsKey(drugName)){
-                                this.stock.get(drugName).add(drug);
+                            // O(log n + log t )
+                            if(this.stock.containsKey(drugName)){ // O(log n)
+                                this.stock.get(drugName).add(drug); // O(log n + log t )
                             }
                             else {
                                 PriorityQueue<Drug> queue = new PriorityQueue<>();
-                                queue.add(drug);
-                                this.stock.put(drugName,queue);
-
+                                queue.add(drug); // O(1), car la liste est vide
+                                this.stock.put(drugName,queue); // O(log n)
                             }
                         }
                         else{
@@ -93,8 +94,8 @@ public  void processDataFile(){
                     writeResult(APPROV + " " + OK);
                     
                     break;
+
                 case DATE: 
-                    // System.out.print("in date");
                     String date = line[1];
                     actualDate = new Date(date);
                     
@@ -109,12 +110,9 @@ public  void processDataFile(){
                             
                         }
                         writeResult("");
-                        // clear order
                         this.order.clear();
                     }else{
-                        // System.out.print("in else statement");
                         writeResult(actualDate.toString() + " " + OK + "\n");
-
                     }
 
                     break;
@@ -153,17 +151,16 @@ public  void processDataFile(){
                     writeResult("");
 
                     break;
-                case PRESCRIPTION:
-                    writeResult(PRESCRIPTION +" " +prinsciptionNum++);
-                    while(myReader.hasNextLine()){
+                case PRESCRIPTION: ////O(m * (log n + t log t + log k)) verifier
+                    writeResult(PRESCRIPTION + " " + prinsciptionNum++); // O(1)
+                    while(myReader.hasNextLine()){ //O(m * (log n + t log t + log k))
                         
                         String med = myReader.nextLine();
                         
                         String [] medication = med.split("\\s+");
 
-                        if(medication.length >= 3){
+                        if(medication.length >= 3){ // O( log n + t log t + log k)
 
-                            // String medicationName = medication[0];
                             String dose = medication[1];
                             String repetition = medication[2];
 
@@ -171,66 +168,55 @@ public  void processDataFile(){
                             int traitmentRepetition = Integer.parseInt(repetition);
 
                             
-                            Drug drugPrescription = new Drug(medication[0], traitmentDose * traitmentRepetition, null);
+                            Drug drugPrescription = new Drug(
+                                medication[0], 
+                                traitmentDose * traitmentRepetition, 
+                                null);
 
                             Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
                             
                             
-                            if(this.stock.containsKey(drugPrescription.getName())){
-                                // PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
+                            // O( log n + t log t + log k)
+                            if(this.stock.containsKey(drugPrescription.getName())){ //O(log n)
                                 Boolean flag = false;
 
-
-                                // pas necessaire de parcourrir toute la liste
-                                // for (Drug drug : queue){
-                                //     if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // c'etait 1, bug dans exemple5 : med49 for expiration Date
-                                //         if( drug.getQuantity() >= drugPrescription.getQuantity()){
-                                //             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
-                                //             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
-                                //             flag = true;
-                                //             if (drug.getQuantity() == 0){
-                                //                 queue.remove(drug);
-                                //             }
-                                //             break;
-                                //         }
-                                //     }
-                                // }
-                                // Idee 1 :faire une copie de la liste, si med trouvé, ajuster la quantité dans stock
                                 // Idee 2 : enlever les elements de la file, jusqua trouver le med, ensuite les ajouter dans la liste
-                                // PriorityQueue<Drug> queue  = new PriorityQueue<Drug>(this.stock.get(drugPrescription.getName()));
-                                PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName());
-                                PriorityQueue<Drug> queueAux = new PriorityQueue<Drug>();
-                                while (queue.size() != 0){
+                                PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName()); //O(1)
+                                PriorityQueue<Drug> queueAux = new PriorityQueue<Drug>(); //O(1)
+                                
+                                while (queue.size() != 0){ // O(t) 
 
-                                    Drug drug = queue.poll();
-                                    queueAux.add(drug);
+                                    Drug drug = queue.poll(); // O(1)
+                                    queueAux.add(drug); // O(log (t))
 
-                                    if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // c'etait 1, bug dans exemple5 : med49 for expiration Date
+                                    // O(log t)
+                                    if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // O(1)
+                                        // c'etait 1, bug dans exemple5 : med49 for expiration Date
                                         if( drug.getQuantity() >= drugPrescription.getQuantity()){
                                             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
                                             // this.stock.get(drugPrescription.getName()).
                                             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
                                             flag = true;
                                             if (drug.getQuantity() == 0){
-                                                queueAux.remove(drug);
+                                                queueAux.remove(drug); // O(log t), on va faire cela au maximum 1 fois
                                             }
                                             break;
                                         }
                                     }
                                 }
-
-                                while (queueAux.size() != 0){
-                                    Drug drug = queueAux.poll();
-                                    queue.add(drug);
+                                
+                                while (queueAux.size() != 0){  //O(t log t)
+                                    Drug drug = queueAux.poll(); //O(1)
+                                    queue.add(drug); //O(log t)
                                 }
 
-                                if(!flag){
+                                if(!flag){ // O(log k)
                                    addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
                                 }
                                 
                             }
-                            else{
-                                
+                            else{ // O(log k)
+                                 
                                 addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
                                 
                                 
@@ -266,7 +252,6 @@ public  void processDataFile(){
 
 private void writeResult(String st){
     try {
-        // System.out.println(st);
         FileWriter myWriter = new FileWriter(writeFile,true);
         myWriter.write(st + "\n");
         
