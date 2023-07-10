@@ -108,7 +108,9 @@ public  void processDataFile(){
                             writeResult(name + " " + order.get(name));
                             
                         }
-                        writeResult("\n");
+                        writeResult("");
+                        // clear order
+                        this.order.clear();
                     }else{
                         // System.out.print("in else statement");
                         writeResult(actualDate.toString() + " " + OK + "\n");
@@ -175,22 +177,53 @@ public  void processDataFile(){
                             
                             
                             if(this.stock.containsKey(drugPrescription.getName())){
-                                PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
+                                // PriorityQueue<Drug> queue  = this.stock.get(drugPrescription.getName());
                                 Boolean flag = false;
 
-                                for (Drug drug : queue){
+
+                                // pas necessaire de parcourrir toute la liste
+                                // for (Drug drug : queue){
+                                //     if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // c'etait 1, bug dans exemple5 : med49 for expiration Date
+                                //         if( drug.getQuantity() >= drugPrescription.getQuantity()){
+                                //             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
+                                //             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
+                                //             flag = true;
+                                //             if (drug.getQuantity() == 0){
+                                //                 queue.remove(drug);
+                                //             }
+                                //             break;
+                                //         }
+                                //     }
+                                // }
+                                // Idee 1 :faire une copie de la liste, si med trouvé, ajuster la quantité dans stock
+                                // Idee 2 : enlever les elements de la file, jusqua trouver le med, ensuite les ajouter dans la liste
+                                // PriorityQueue<Drug> queue  = new PriorityQueue<Drug>(this.stock.get(drugPrescription.getName()));
+                                PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName());
+                                PriorityQueue<Drug> queueAux = new PriorityQueue<Drug>();
+                                while (queue.size() != 0){
+
+                                    Drug drug = queue.poll();
+                                    queueAux.add(drug);
+
                                     if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // c'etait 1, bug dans exemple5 : med49 for expiration Date
                                         if( drug.getQuantity() >= drugPrescription.getQuantity()){
                                             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
+                                            // this.stock.get(drugPrescription.getName()).
                                             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
                                             flag = true;
                                             if (drug.getQuantity() == 0){
-                                                queue.remove(drug);
+                                                queueAux.remove(drug);
                                             }
                                             break;
                                         }
                                     }
                                 }
+
+                                while (queueAux.size() != 0){
+                                    Drug drug = queueAux.poll();
+                                    queue.add(drug);
+                                }
+
                                 if(!flag){
                                    addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
                                 }
