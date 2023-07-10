@@ -4,8 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 
 
@@ -34,24 +36,20 @@ public Process (String [] args){
     this.stock = new TreeMap<>();
     this.order = new TreeMap<>();
 
-    // clear the file writeFile
+    // clear the file writeFile for testing
     try {
         FileWriter myWriter = new FileWriter(writeFile);
-        // myWriter.write("");
         myWriter.close();
-
       } catch (IOException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
     }
-
 }
 
-public Process(){
-    this.stock = new TreeMap<>();
-    this.order = new TreeMap<>();
-
-}
+// public Process(){
+//     this.stock = new TreeMap<>();
+//     this.order = new TreeMap<>();
+// }
 
 public  void processDataFile(){
     try {
@@ -80,14 +78,12 @@ public  void processDataFile(){
                             // O(log n + log t )
                             if(this.stock.containsKey(drugName)){ // O(log n)
                                 this.stock.get(drugName).add(drug); // O(log n + log t )
-                            }
-                            else {
+                            } else {
                                 PriorityQueue<Drug> queue = new PriorityQueue<>();
                                 queue.add(drug); // O(1), car la liste est vide
                                 this.stock.put(drugName,queue); // O(log n)
                             }
-                        }
-                        else{
+                        }else{
                             break;
                         }
                     }        
@@ -124,9 +120,10 @@ public  void processDataFile(){
                     for (String name  : names) {
                         
                         PriorityQueue<Drug> queue = stock.get(name);
-                            // find the first ele in queue that has the good expiration date
+
+                        // find the first element in queue with good expiration date
                         while(queue.size() != 0 ){
-                                // if the first date is good, the others are good also
+                                // if the first date is good, the others are good too
                                 Drug drug = queue.peek();
                                 
                                 if(drug.getExpirationDate().compareTo(actualDate) >= 0){ // cetait 1 
@@ -136,27 +133,18 @@ public  void processDataFile(){
                                     queue.poll(); // removing experied drugs
                                 }
                             }
-
                             queue.forEach(obj ->  writeResult(obj.toString()));
-
-                        // ConcurrentModificationException in Exemple 3
-                        // Maybe it is not necessary because we print queue 
-                        // if(stock.get(name).size() == 0){ // checking if there's still any drug list associated to this name 
-                        //     stock.remove(name);// if not the node is removed from the tree.
-                        //     // break;
-                            
-                        // }  
                     }
-                    
                     writeResult("");
 
                     break;
                 case PRESCRIPTION: ////O(m * (log n + t log t + log k)) verifier
+
                     writeResult(PRESCRIPTION + " " + prinsciptionNum++); // O(1)
+
                     while(myReader.hasNextLine()){ //O(m * (log n + t log t + log k))
                         
                         String med = myReader.nextLine();
-                        
                         String [] medication = med.split("\\s+");
 
                         if(medication.length >= 3){ // O( log n + t log t + log k)
@@ -167,46 +155,45 @@ public  void processDataFile(){
                             int traitmentDose = Integer.parseInt(dose);
                             int traitmentRepetition = Integer.parseInt(repetition);
 
-                            
                             Drug drugPrescription = new Drug(
-                                medication[0], 
-                                traitmentDose * traitmentRepetition, 
-                                null);
+                                            medication[0], 
+                                            traitmentDose * traitmentRepetition, 
+                                            null);
 
                             Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
-                            
                             
                             // O( log n + t log t + log k)
                             if(this.stock.containsKey(drugPrescription.getName())){ //O(log n)
                                 Boolean flag = false;
 
-                                // Idee 2 : enlever les elements de la file, jusqua trouver le med, ensuite les ajouter dans la liste
+                                // Enlever les elements de la file, jusqua trouver le med, ensuite les ajouter dans la liste
                                 PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName()); //O(1)
-                                PriorityQueue<Drug> queueAux = new PriorityQueue<Drug>(); //O(1)
+                                Stack<Drug> stack = new Stack<>(); //O(1)
                                 
                                 while (queue.size() != 0){ // O(t) 
 
                                     Drug drug = queue.poll(); // O(1)
-                                    queueAux.add(drug); // O(log (t))
+                                    stack.push(drug); // O(1)
 
                                     // O(log t)
                                     if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // O(1)
-                                        // c'etait 1, bug dans exemple5 : med49 for expiration Date
+
                                         if( drug.getQuantity() >= drugPrescription.getQuantity()){
+
                                             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
-                                            // this.stock.get(drugPrescription.getName()).
                                             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
                                             flag = true;
+
                                             if (drug.getQuantity() == 0){
-                                                queueAux.remove(drug); // O(log t), on va faire cela au maximum 1 fois
+                                                stack.pop(); // O(1), on va faire cela au maximum 1 fois
                                             }
                                             break;
                                         }
                                     }
                                 }
                                 
-                                while (queueAux.size() != 0){  //O(t log t)
-                                    Drug drug = queueAux.poll(); //O(1)
+                                while (stack.size() != 0){  //O(t log t)
+                                    Drug drug = stack.pop(); //O(1)
                                     queue.add(drug); //O(log t)
                                 }
 
@@ -216,14 +203,10 @@ public  void processDataFile(){
                                 
                             }
                             else{ // O(log k)
-                                 
-                                addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
-                                
-                                
+                                addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());          
                             }
                         }
                         else{
-                            
                             break;
                         }
                     }     
@@ -242,23 +225,13 @@ public  void processDataFile(){
     }
 }
 
-
-
-
-  
-
-
-
-
 private void writeResult(String st){
     try {
         FileWriter myWriter = new FileWriter(writeFile,true);
         myWriter.write(st + "\n");
-        
-        
         myWriter.close();
 
-      } catch (IOException e) {
+    } catch (IOException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
     }
@@ -266,22 +239,16 @@ private void writeResult(String st){
 
 private void addToOrder(Drug d, int dose, int rep,int quantity){
      writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE);
-    if(order.containsKey(d.getName())){
-                                        
+    if(order.containsKey(d.getName())){                         
         order.put(d.getName(), order.get(d.getName()) + quantity); 
     }
     else{
         order.put(d.getName(), quantity);
     }
-    
 }
-
-
-
 
 public void compute(){
     processDataFile();
-
 }
 
 }
