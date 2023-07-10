@@ -34,6 +34,16 @@ public Process (String [] args){
     this.stock = new TreeMap<>();
     this.order = new TreeMap<>();
 
+    // clear the file writeFile
+    try {
+        FileWriter myWriter = new FileWriter(writeFile);
+        // myWriter.write("");
+        myWriter.close();
+
+      } catch (IOException e) {
+        System.out.println("An error occurred.");
+        e.printStackTrace();
+    }
 
 }
 
@@ -59,25 +69,12 @@ public  void processDataFile(){
                     while(myReader.hasNextLine()){
                         String med = myReader.nextLine();
 
-                        // String str = "one_space   multiple_spaces    tab";
                         String [] medication = med.split("\\s+");
 
-                        // arr[0] = one_space
-                        // arr[1] = multiple_spaces
-                        // arr[2] = tab
-
-
-                        // String[] medication = med.split(" ");
-                        
-                        // if(medication.length == 1){ 
-                        //     medication = medication[0].split("\t");
-                        // }
-                        
-                        // System.out.println("taille med " + medication.length);
                         if(medication.length >= 2){
                             // System.out.println("name" + medication[0] + " quantity" + Integer.parseInt(medication[1]) + " date"  + medication[2] );
                             String drugName = medication[0];
-                            Drug drug = new Drug(medication[0], Integer.parseInt(medication[1]), new Date(medication[2]));
+                            Drug drug = new Drug(drugName, Integer.parseInt(medication[1]), new Date(medication[2]));
                             
                             if(this.stock.containsKey(drugName)){
                                 this.stock.get(drugName).add(drug);
@@ -93,7 +90,7 @@ public  void processDataFile(){
                             break;
                         }
                     }        
-                    writeResult(APPROV + " " + OK + "\n");
+                    writeResult(APPROV + " " + OK);
                     
                     break;
                 case DATE: 
@@ -131,12 +128,12 @@ public  void processDataFile(){
                         while(queue.size() != 0 ){
                                 // if the first date is good, the others are good also
                                 Drug drug = queue.peek();
-                                if(drug.getExpirationDate().compareTo(actualDate) >= 0){ // c'etait 1
+                                
+                                if(drug.getExpirationDate().compareTo(actualDate) >= 0){ // cetait 1 
                                     break;
                                 }
                                 else{
-                                    stock.get(name).remove(drug); // removing experied drugs.// or poll
-                                    queue.poll();
+                                    queue.poll(); // removing experied drugs
                                 }
                             }
 
@@ -151,10 +148,7 @@ public  void processDataFile(){
                         // }  
                     }
                     
-                    
-                
-
-                    writeResult("\n");
+                    writeResult("");
 
                     break;
                 case PRESCRIPTION:
@@ -163,15 +157,11 @@ public  void processDataFile(){
                         
                         String med = myReader.nextLine();
                         
-                        // String[] medication = med.split(" ");
-
                         String [] medication = med.split("\\s+");
-
-                    
 
                         if(medication.length >= 3){
 
-                            String medicationName = medication[0];
+                            // String medicationName = medication[0];
                             String dose = medication[1];
                             String repetition = medication[2];
 
@@ -179,7 +169,7 @@ public  void processDataFile(){
                             int traitmentRepetition = Integer.parseInt(repetition);
 
                             
-                            Drug drugPrescription = new Drug(medicationName, traitmentDose * traitmentRepetition, null);
+                            Drug drugPrescription = new Drug(medication[0], traitmentDose * traitmentRepetition, null);
 
                             Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
                             
@@ -189,8 +179,7 @@ public  void processDataFile(){
                                 Boolean flag = false;
 
                                 for (Drug drug : queue){
-                                    // int numODays = actualDate.getNumODays(drug.getExpirationDate());
-                                    if (drug.getExpirationDate().compareTo(finalDate) >= 1){ // for expiration Date
+                                    if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // c'etait 1, bug dans exemple5 : med49 for expiration Date
                                         if( drug.getQuantity() >= drugPrescription.getQuantity()){
                                             drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
                                             writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
@@ -219,7 +208,7 @@ public  void processDataFile(){
                             break;
                         }
                     }     
-                    writeResult("\n");   
+                    writeResult("");   
                     break;
                 
                 default:
