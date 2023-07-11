@@ -62,11 +62,14 @@ try {
         String command = line[0];
             
         switch (command) {
-            case APPROV:  // O(log n + log t )
-                while(myReader.hasNextLine()){ // O (n)
-                    String med = myReader.nextLine();
+            case APPROV:  // O(n)
 
+                // O(n)
+                while(myReader.hasNextLine()){ 
+
+                    String med = myReader.nextLine();
                     String [] medication = med.split("\\s+");
+
 
                     if(medication.length >= 2){
                         String drugName = medication[0];
@@ -74,9 +77,10 @@ try {
                                             Integer.parseInt(medication[1]), 
                                             new Date(medication[2]));
                             
-                        // O(log n + log t )
-                        if(this.stock.containsKey(drugName)){ // O(log n)
-                            this.stock.get(drugName).add(drug); // O(log n + log t )
+                        // O (log n)
+                        if(this.stock.containsKey(drugName)) // O(log n)
+                        { 
+                            this.stock.get(drugName).add(drug); // O(log n + log t ) = O (log n)
                         } else {
                             PriorityQueue<Drug> queue = new PriorityQueue<>();
                             queue.add(drug); // O(1), car la liste est vide
@@ -93,18 +97,22 @@ try {
             case DATE: 
                 String date = line[1];
                 actualDate = new Date(date);
-                    
+                
+                // O(k)
                 if(this.order.size() > 0){
                     writeResult(actualDate.toString() + " " + COMMANDE + " :");
 
-                    Set <String> names = order.keySet();
+                    Set <String> names = order.keySet(); // O(k)
 
-                    for ( String name : names) {
-                            
-                        writeResult(name + " " + order.get(name));
-                            
+                    // O(k)
+                    for ( String name : names) // O(k)
+                    {
+                        writeResult(name + " " + order.get(name)); // O(1)        
                     }
+
                     writeResult("");
+
+                    // O(k)
                     this.order.clear();
                 }else{
                     writeResult(actualDate.toString() + " " + OK + "\n");
@@ -137,16 +145,17 @@ try {
                 writeResult("");
                 break;
             
-            case PRESCRIPTION: ////O(m * (log n + t log t + log k)) verifier
+            case PRESCRIPTION: // O( m*n*log n + m*log k))
 
                 writeResult(PRESCRIPTION + " " + prinsciptionNum++); // O(1)
 
-                while(myReader.hasNextLine()){ //O(m * (log n + t log t + log k))
+                while(myReader.hasNextLine()){ // O(m * (n log n + log k))
                         
                     String med = myReader.nextLine();
                     String [] medication = med.split("\\s+");
 
-                    if(medication.length >= 3){ // O( log n + t log t + log k)
+                    // O (n log n + log k)
+                    if(medication.length >= 3){ 
 
                         String dose = medication[1];
                         String repetition = medication[2];
@@ -161,21 +170,20 @@ try {
 
                         Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
                             
-                        // O( log n + t log t + log k)
-                        if(this.stock.containsKey(drugPrescription.getName())){ //O(log n)
+                        // O( log t + p*log p + log k ) = O (n log n + log k)
+                        if(this.stock.containsKey(drugPrescription.getName()))//O(log t)
+                        { 
                             Boolean flag = false;
-
-                            // Remove items from the queue until find the 
-                            //correct drug, then add them to the list again
+                            // Remove items from the queue until find the correct drug, then add them to the list again
                             PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName()); //O(1)
                             Stack<Drug> stack = new Stack<>(); //O(1)
                                 
-                            while (queue.size() != 0){ // O(t) 
+                            while (queue.size() != 0){ // O(p) 
 
                                 Drug drug = queue.poll(); // O(1)
                                 stack.push(drug); // O(1)
 
-                                // O(log t)
+                                // O(1)
                                 if (drug.getExpirationDate().compareTo(finalDate) >= 0){ // O(1)
 
                                     if( drug.getQuantity() >= drugPrescription.getQuantity()){
@@ -191,9 +199,10 @@ try {
                                     }
                                 }
                             }
-                            while (stack.size() != 0){  //O(t log t)
+
+                            while (stack.size() != 0){  //O(p log p)
                                 Drug drug = stack.pop(); //O(1)
-                                queue.add(drug); //O(log t)
+                                queue.add(drug); //O(log p)
                             }
 
                             if(!flag){ // O(log k)
@@ -236,13 +245,17 @@ private void writeResult(String st){
     }
 }
 
+//O(log k)
 private void addToOrder(Drug d, int dose, int rep,int quantity){
-     writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE);
-    if(order.containsKey(d.getName())){                         
-        order.put(d.getName(), order.get(d.getName()) + quantity); 
+     writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE); // O(1)
+    
+    //O(log k)
+    if(order.containsKey(d.getName())) //O(log k)
+    {                         
+        order.put(d.getName(), order.get(d.getName()) + quantity); //O(log k)
     }
     else{
-        order.put(d.getName(), quantity);
+        order.put(d.getName(), quantity); //O(log k)
     }
 }
 
