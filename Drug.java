@@ -1,3 +1,7 @@
+// Travail pratique 2 : Gestion des stocks d’une pharmacie
+// Larry Fotso Guiffo - 202201552 
+// Cíntia Dalila Soares - C2791
+
 public class Drug implements Comparable<Drug> {
 
     private String name;

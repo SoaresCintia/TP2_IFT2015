@@ -1,10 +1,12 @@
+// Travail pratique 2 : Gestion des stocks d’une pharmacie
+// Larry Fotso Guiffo - 202201552 
+// Cíntia Dalila Soares - C2791
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
@@ -36,14 +38,6 @@ public Process (String [] args){
     this.stock = new TreeMap<>();
     this.order = new TreeMap<>();
 
-    // clear the file writeFile for testing
-    try {
-        FileWriter myWriter = new FileWriter(writeFile);
-        myWriter.close();
-      } catch (IOException e) {
-        System.out.println("An error occurred.");
-        e.printStackTrace();
-    }
 }
 
 public  void processDataFile(){
@@ -73,13 +67,13 @@ try {
                                             new Date(medication[2]));
                             
                         // O (log n)
-                        if(this.stock.containsKey(drugName)) // O(log n)
+                        if(this.stock.containsKey(drugName)) // O(log p)
                         { 
-                            this.stock.get(drugName).add(drug); // O(log n + log t ) = O (log n)
+                            this.stock.get(drugName).add(drug); // O(log p + log t ) = O (log n)
                         } else {
                             PriorityQueue<Drug> queue = new PriorityQueue<>();
                             queue.add(drug); // O(1), car la liste est vide
-                            this.stock.put(drugName,queue); // O(log n)
+                            this.stock.put(drugName,queue); // O(log p)
                         }
                     }else{
                         break;
@@ -154,23 +148,23 @@ try {
 
                         String dose = medication[1];
                         String repetition = medication[2];
-
                         int traitmentDose = Integer.parseInt(dose);
                         int traitmentRepetition = Integer.parseInt(repetition);
 
-                        Drug drugPrescription = new Drug(
-                                        medication[0], 
-                                        traitmentDose * traitmentRepetition, 
-                                        null);
+                        Drug drugPrescription = new Drug(medication[0], 
+                                            traitmentDose * traitmentRepetition, 
+                                            null);
 
-                        Date  finalDate = actualDate.computeDate(drugPrescription.getQuantity());
+                        Date  finalDate = actualDate.computeDate(
+                            drugPrescription.getQuantity());
                             
                         // O( log t + p*log p + log k ) = O (n log n + log k)
                         if(this.stock.containsKey(drugPrescription.getName()))//O(log t)
                         { 
                             Boolean flag = false;
+                            
                             // Remove items from the queue until find the correct drug, then add them to the list again
-                            PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName()); //O(1)
+                            PriorityQueue<Drug> queue = this.stock.get(drugPrescription.getName()); //O(log t)
                             Stack<Drug> stack = new Stack<>(); //O(1)
                                 
                             while (queue.size() != 0){ // O(p) 
