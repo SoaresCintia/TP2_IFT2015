@@ -46,11 +46,6 @@ public Process (String [] args){
     }
 }
 
-// public Process(){
-//     this.stock = new TreeMap<>();
-//     this.order = new TreeMap<>();
-// }
-
 public  void processDataFile(){
 try {
     File myObj = new File(this.readFile);
