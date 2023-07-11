@@ -46,14 +46,14 @@ public Process (String [] args){
     }
 }
 
-// public Process(){
-//     this.stock = new TreeMap<>();
-//     this.order = new TreeMap<>();
-// }
+ public Process(){
+    this.stock = new TreeMap<>();
+    this.order = new TreeMap<>();
+}
 
-public  void processDataFile(){
+public  void processDataFile(String fileName, String filename2){
 try {
-    File myObj = new File(this.readFile);
+    File myObj = new File(fileName);
     Scanner myReader = new Scanner(myObj);
         
     while (myReader.hasNextLine()) {
@@ -86,7 +86,7 @@ try {
                         break;
                     }
                 }        
-                writeResult(APPROV + " " + OK);
+                writeResult(APPROV + " " + OK,filename2);
                     
                 break;
 
@@ -95,25 +95,25 @@ try {
                 actualDate = new Date(date);
                     
                 if(this.order.size() > 0){
-                    writeResult(actualDate.toString() + " " + COMMANDE + " :");
+                    writeResult(actualDate.toString() + " " + COMMANDE + " :",filename2);
 
                     Set <String> names = order.keySet();
 
                     for ( String name : names) {
                             
-                        writeResult(name + " " + order.get(name));
+                        writeResult(name + " " + order.get(name),filename2);
                             
                     }
-                    writeResult("");
+                    writeResult("",filename2);
                     this.order.clear();
                 }else{
-                    writeResult(actualDate.toString() + " " + OK + "\n");
+                    writeResult(actualDate.toString() + " " + OK + "\n",filename2);
                 }
 
                 break;
             case STOCK:
                     
-                writeResult(STOCK + " " + actualDate.toString());
+                writeResult(STOCK + " " + actualDate.toString(),filename2);
                 Set<String> names = stock.keySet();
 
                 for (String name  : names) {
@@ -132,14 +132,14 @@ try {
                                 queue.poll(); // removing experied drugs
                             }
                         }
-                        queue.forEach(obj ->  writeResult(obj.toString()));
+                        queue.forEach(obj ->  writeResult(obj.toString(),filename2));
                 }
-                writeResult("");
+                writeResult("",filename2);
                 break;
             
             case PRESCRIPTION: ////O(m * (log n + t log t + log k)) verifier
 
-                writeResult(PRESCRIPTION + " " + prinsciptionNum++); // O(1)
+                writeResult(PRESCRIPTION + " " + prinsciptionNum++,filename2); // O(1)
 
                 while(myReader.hasNextLine()){ //O(m * (log n + t log t + log k))
                         
@@ -181,7 +181,7 @@ try {
                                     if( drug.getQuantity() >= drugPrescription.getQuantity()){
 
                                         drug.setQuantity(drug.getQuantity() - drugPrescription.getQuantity());
-                                        writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK);
+                                        writeResult(drugPrescription.getName() + " " + traitmentDose + " " + repetition + " " +   OK,filename2);
                                         flag = true;
 
                                         if (drug.getQuantity() == 0){
@@ -197,19 +197,19 @@ try {
                             }
 
                             if(!flag){ // O(log k)
-                               addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());
+                               addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity(),filename2);
                             }
                                 
                         }
                         else{ // O(log k)
-                            addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity());          
+                            addToOrder(drugPrescription,traitmentDose,traitmentRepetition,drugPrescription.getQuantity(),filename2);          
                         }
                     }
                     else{
                         break;
                     }
                 }     
-                writeResult("");   
+                writeResult("",filename2);   
                 break;
                 
             default:
@@ -224,9 +224,9 @@ catch (FileNotFoundException e) {
     }
 }
 
-private void writeResult(String st){
+private void writeResult(String st, String fileName){
     try {
-        FileWriter myWriter = new FileWriter(writeFile,true);
+        FileWriter myWriter = new FileWriter(fileName,true);
         myWriter.write(st + "\n");
         myWriter.close();
 
@@ -236,8 +236,8 @@ private void writeResult(String st){
     }
 }
 
-private void addToOrder(Drug d, int dose, int rep,int quantity){
-     writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE);
+private void addToOrder(Drug d, int dose, int rep,int quantity,String fileName){
+     writeResult(d.getName() + " " + dose + " " + rep + " " +   COMMANDE,fileName);
     if(order.containsKey(d.getName())){                         
         order.put(d.getName(), order.get(d.getName()) + quantity); 
     }
@@ -246,8 +246,6 @@ private void addToOrder(Drug d, int dose, int rep,int quantity){
     }
 }
 
-public void compute(){
-    processDataFile();
-}
+
 
 }
